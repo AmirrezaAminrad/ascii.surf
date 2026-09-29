@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Build CLI
+        run: npm run build:cli
+
+      - name: Smoke test CLI
+        run: |
+          node cli/dist/cli.js --shape 1 --once --cols 40 --rows 12 --no-color > /dev/null
+          node cli/dist/cli.js --list shapes | grep -q lorenz
+          node cli/dist/cli.js --shape lorenz --once --warmup 30 --cols 50 --rows 16 --format ansi --out "$RUNNER_TEMP/smoke.ans"
+          test -s "$RUNNER_TEMP/smoke.ans"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: |
+            dist/
+            cli/dist/
+          retention-days: 7

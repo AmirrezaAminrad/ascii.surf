@@ -1,0 +1,28 @@
+{
+  "name": "ascii-surf-cli",
+  "description": "Terminal sibling of ascii.surf — live 3D ASCII rendering and one-shot frame export from the shared engine",
+  "private": true,
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "author": "Amirreza Aminrad <amirrezaaminrad@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AmirrezaAminrad/ascii.surf.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "ascii-surf": "./dist/cli.js"
+  },
+  "scripts": {
+    "dev": "tsx src/main.ts",
+    "build": "esbuild src/main.ts --bundle --platform=node --format=esm --banner:js=\"#!/usr/bin/env node\" --outfile=dist/cli.js",
+    "prepare": "npm run build"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "tsx": "^4.19.2"
+  }
+}

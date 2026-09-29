@@ -1,0 +1,301 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1276" font-family="ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas, 'Courier New', monospace">
+  <title>ascii.surf rendering pipeline</title>
+  <desc>One shared engine (src/engine/renderer.ts) with two frontends: the web requestAnimationFrame loop painting a canvas, and the terminal CLI emitting ANSI truecolor frames.</desc>
+
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4e7d62"/>
+    </marker>
+  </defs>
+
+  <!-- background -->
+  <rect x="0" y="0" width="1600" height="1276" fill="#0a0e0b"/>
+
+  <!-- header -->
+  <text x="40" y="48" font-size="22" font-weight="bold" fill="#d9f7e5">ascii.surf — rendering pipeline</text>
+  <text x="40" y="74" font-size="13" fill="#7fa88f">one shared engine, two frontends — a canvas in the browser, ANSI escapes in the terminal</text>
+  <text x="1560" y="74" font-size="11" fill="#587a66" text-anchor="end">companion to docs/rendering-pipeline.md</text>
+
+  <!-- legend -->
+  <g font-size="11" fill="#8fb89c">
+    <rect x="1117" y="36" width="12" height="12" rx="2" fill="#0a0e0b" stroke="#7fb8a0" stroke-width="1.5"/><text x="1135" y="46">inputs</text>
+    <rect x="1193" y="36" width="12" height="12" rx="2" fill="#0a0e0b" stroke="#39ff6a" stroke-width="1.5"/><text x="1211" y="46">web loop</text>
+    <rect x="1282" y="36" width="12" height="12" rx="2" fill="#0a0e0b" stroke="#ffd166" stroke-width="1.5"/><text x="1300" y="46">engine</text>
+    <rect x="1358" y="36" width="12" height="12" rx="2" fill="#0a0e0b" stroke="#6fc3ff" stroke-width="1.5"/><text x="1376" y="46">present</text>
+    <rect x="1440" y="36" width="12" height="12" rx="2" fill="#0a0e0b" stroke="#c792ea" stroke-width="1.5"/><text x="1458" y="46">outputs</text>
+    <rect x="1522" y="36" width="12" height="12" rx="2" fill="#0a0e0b" stroke="#ff9e64" stroke-width="1.5"/><text x="1540" y="46">cli</text>
+  </g>
+
+  <!-- ===================== lane 1: inputs ===================== -->
+  <rect x="40" y="110" width="1520" height="102" rx="10" fill="#0d1310" stroke="#7fb8a0" stroke-opacity="0.45" stroke-width="1.2"/>
+  <text x="56" y="132" font-size="12" font-weight="bold" letter-spacing="1.5" fill="#7fb8a0">INPUTS</text>
+  <g stroke="#7fb8a0" stroke-opacity="0.8" stroke-width="1.3" fill="#101815">
+    <rect x="64"   y="144" width="275" height="58" rx="6"/>
+    <rect x="363"  y="144" width="275" height="58" rx="6"/>
+    <rect x="662"  y="144" width="275" height="58" rx="6"/>
+    <rect x="961"  y="144" width="275" height="58" rx="6"/>
+    <rect x="1260" y="144" width="275" height="58" rx="6"/>
+  </g>
+  <g font-size="12.5" font-weight="bold" fill="#e7f6ec">
+    <text x="76"   y="163">Shape registry</text>
+    <text x="375"  y="163">Live code surfaces</text>
+    <text x="674"  y="163">ViewSettings + share state</text>
+    <text x="973"  y="163">Pointer · wheel · keys</text>
+    <text x="1272" y="163">STL / OBJ import</text>
+  </g>
+  <g font-size="10.5" fill="#93bda3">
+    <text x="76"   y="179">63 shapes · 6 categories</text>
+    <text x="375"  y="179">compileSurface() · 250 ms debounce</text>
+    <text x="674"  y="179">localStorage · base64url #s=</text>
+    <text x="973"  y="179">plain refs — never React state</text>
+    <text x="1272" y="179">parse → point-sampling shape</text>
+  </g>
+  <g font-size="10" fill="#6f9781">
+    <text x="76"   y="194">src/engine/registry.ts</text>
+    <text x="375"  y="194">src/engine/renderer.ts</text>
+    <text x="674"  y="194">src/state.ts</text>
+    <text x="973"  y="194">src/components/AsciiView.tsx</text>
+    <text x="1272" y="194">src/engine/mesh.ts</text>
+  </g>
+  <!-- collector: five inputs converge into the loop -->
+  <g stroke="#4e7d62" stroke-width="1.5" fill="none">
+    <path d="M 202 202 L 202 220"/>
+    <path d="M 500 202 L 500 220"/>
+    <path d="M 800 202 L 800 220"/>
+    <path d="M 1098 202 L 1098 220"/>
+    <path d="M 1398 202 L 1398 220"/>
+    <path d="M 202 220 L 1398 220"/>
+    <path d="M 800 220 L 800 234" marker-end="url(#arr)"/>
+  </g>
+
+  <!-- ===================== lane 2: web frame loop ===================== -->
+  <rect x="40" y="240" width="1520" height="164" rx="10" fill="#0d1310" stroke="#39ff6a" stroke-opacity="0.45" stroke-width="1.2"/>
+  <text x="56" y="264" font-size="12" font-weight="bold" letter-spacing="1.5" fill="#39ff6a">WEB FRAME LOOP — src/components/AsciiView.tsx · one requestAnimationFrame loop</text>
+  <g stroke="#39ff6a" stroke-opacity="0.8" stroke-width="1.3" fill="#101815">
+    <rect x="60"   y="292" width="196" height="58" rx="6"/>
+    <rect x="274"  y="292" width="196" height="58" rx="6"/>
+    <rect x="488"  y="292" width="196" height="58" rx="6"/>
+    <rect x="702"  y="292" width="196" height="58" rx="6"/>
+    <rect x="916"  y="292" width="196" height="58" rx="6"/>
+    <rect x="1130" y="292" width="196" height="58" rx="6"/>
+    <rect x="1344" y="292" width="196" height="58" rx="6"/>
+  </g>
+  <g font-size="12" font-weight="bold" fill="#e7f6ec">
+    <text x="72"   y="314">dt clamp</text>
+    <text x="286"  y="314">crossfades · 400 ms</text>
+    <text x="500"  y="314">dpr sizing</text>
+    <text x="714"  y="314">char grid</text>
+    <text x="928"  y="314">time + rotation</text>
+    <text x="1142" y="314">idle?</text>
+    <text x="1356" y="314">renderFrame()</text>
+  </g>
+  <g font-size="10.5" fill="#93bda3">
+    <text x="72"   y="332">dt = min(0.1, now - last)</text>
+    <text x="286"  y="332">charset · theme · shape</text>
+    <text x="500"  y="332">resize on real changes</text>
+    <text x="714"  y="332">cols × rows from metrics</text>
+    <text x="928"  y="332">spin · inertia 0.05^dt</text>
+    <text x="1142" y="332">viewSig · static · quiet</text>
+    <text x="1356" y="332">mutated RenderOptions</text>
+  </g>
+  <!-- chip-to-chip arrows -->
+  <g stroke="#4e7d62" stroke-width="1.5" fill="none">
+    <path d="M 256 321 L 268 321" marker-end="url(#arr)"/>
+    <path d="M 470 321 L 482 321" marker-end="url(#arr)"/>
+    <path d="M 684 321 L 696 321" marker-end="url(#arr)"/>
+    <path d="M 898 321 L 910 321" marker-end="url(#arr)"/>
+    <path d="M 1112 321 L 1124 321" marker-end="url(#arr)"/>
+    <path d="M 1326 321 L 1338 321" marker-end="url(#arr)"/>
+  </g>
+  <!-- idle skip note -->
+  <path d="M 1228 350 L 1228 362" stroke="#4e7d62" stroke-width="1.5" stroke-dasharray="4 3" fill="none" marker-end="url(#arr)"/>
+  <rect x="1000" y="366" width="520" height="30" rx="6" fill="#101815" stroke="#39ff6a" stroke-opacity="0.5" stroke-width="1.1" stroke-dasharray="5 3"/>
+  <text x="1012" y="385" font-size="10.5" fill="#93bda3">idle → skip render + draw entirely — the loop keeps ticking</text>
+
+  <!-- ===================== lane 3: shared engine ===================== -->
+  <rect x="40" y="436" width="1520" height="424" rx="10" fill="#0d1310" stroke="#ffd166" stroke-opacity="0.45" stroke-width="1.2"/>
+  <text x="56" y="460" font-size="12" font-weight="bold" letter-spacing="1.5" fill="#ffd166">SHARED ENGINE — src/engine/renderer.ts</text>
+
+  <!-- loop -> engine: painted after the lane rect above, or the lane buries
+       the label and the arrowhead -->
+  <path d="M 244 404 L 244 470" stroke="#4e7d62" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <text x="256" y="428" font-size="10.5" fill="#93bda3">RenderOptions — one reused object</text>
+
+  <!-- dispatch chip -->
+  <rect x="64" y="476" width="360" height="44" rx="6" fill="#101815" stroke="#ffd166" stroke-opacity="0.85" stroke-width="1.3"/>
+  <text x="244" y="494" font-size="12" font-weight="bold" fill="#e7f6ec" text-anchor="middle">renderFrame(renderable, opt)</text>
+  <text x="244" y="511" font-size="10.5" fill="#93bda3" text-anchor="middle">dispatch by shape kind</text>
+
+  <!-- builders (column A) -->
+  <g stroke="#ffd166" stroke-opacity="0.8" stroke-width="1.3" fill="#101815">
+    <rect x="64" y="540" width="280" height="52" rx="6"/>
+    <rect x="64" y="600" width="280" height="52" rx="6"/>
+    <rect x="64" y="660" width="280" height="52" rx="6"/>
+    <rect x="64" y="720" width="280" height="52" rx="6"/>
+    <rect x="64" y="780" width="280" height="52" rx="6"/>
+  </g>
+  <g font-size="12.5" font-weight="bold" fill="#e7f6ec">
+    <text x="76" y="560">parametric</text>
+    <text x="76" y="620">generate</text>
+    <text x="76" y="680">implicit</text>
+    <text x="76" y="740">sim</text>
+    <text x="76" y="800">planar</text>
+  </g>
+  <g font-size="10.5" fill="#93bda3">
+    <text x="76" y="578">fn(u, v, t) → tangent normals</text>
+    <text x="76" y="638">point cloud → framePush / frameGlow</text>
+    <text x="76" y="698">F(x,y,z,t) iso grid → gradient normals</text>
+    <text x="76" y="758">cached instance · sim.step(dt)</text>
+    <text x="76" y="818">per-cell pixel fn · 2×2 SSAA</text>
+  </g>
+  <text x="64" y="850" font-size="10.5" fill="#6f9781">static geometry is sampled once into geoCache, then only re-projected</text>
+
+  <!-- fan: dispatch -> five builders (left gutter trunk) -->
+  <g stroke="#4e7d62" stroke-width="1.5" fill="none">
+    <path d="M 64 498 L 52 498"/>
+    <path d="M 52 498 L 52 566 L 58 566" marker-end="url(#arr)"/>
+    <path d="M 52 498 L 52 626 L 58 626" marker-end="url(#arr)"/>
+    <path d="M 52 498 L 52 686 L 58 686" marker-end="url(#arr)"/>
+    <path d="M 52 498 L 52 746 L 58 746" marker-end="url(#arr)"/>
+    <path d="M 52 498 L 52 806 L 58 806" marker-end="url(#arr)"/>
+  </g>
+
+  <!-- output trunk: builders -> PointFrame pool -->
+  <g stroke="#4e7d62" stroke-width="1.5" fill="none">
+    <path d="M 344 566 L 384 566 L 384 612"/>
+    <path d="M 344 626 L 384 626"/>
+    <path d="M 344 686 L 384 686"/>
+    <path d="M 344 746 L 384 746"/>
+    <path d="M 344 806 L 384 806 L 384 612"/>
+    <path d="M 384 612 L 414 612" marker-end="url(#arr)"/>
+  </g>
+
+  <!-- column B: pool + planar field -->
+  <rect x="420" y="580" width="240" height="64" rx="6" fill="#101815" stroke="#ffd166" stroke-opacity="0.8" stroke-width="1.3"/>
+  <text x="432" y="600" font-size="12.5" font-weight="bold" fill="#e7f6ec">PointFrame pool</text>
+  <text x="432" y="617" font-size="10.5" fill="#93bda3">pos · nrm · lum — reused</text>
+  <text x="432" y="632" font-size="10.5" fill="#93bda3">mode: lit | emissive</text>
+  <rect x="420" y="700" width="240" height="64" rx="6" fill="#101815" stroke="#ffd166" stroke-opacity="0.8" stroke-width="1.3"/>
+  <text x="432" y="720" font-size="12.5" font-weight="bold" fill="#e7f6ec">planar field</text>
+  <text x="432" y="737" font-size="10.5" fill="#93bda3">per-cell luminance</text>
+  <text x="432" y="752" font-size="10.5" fill="#93bda3">snapshot → planarPrev</text>
+
+  <!-- column C: raster chain -->
+  <rect x="720" y="530" width="300" height="76" rx="6" fill="#101815" stroke="#ffd166" stroke-opacity="0.8" stroke-width="1.3"/>
+  <text x="732" y="550" font-size="12.5" font-weight="bold" fill="#e7f6ec">projectPoints()</text>
+  <text x="732" y="567" font-size="10.5" fill="#93bda3">rotate → project → splat → z-test</text>
+  <text x="732" y="582" font-size="10.5" fill="#93bda3">shade: Lambert · Blinn-Phong · fog</text>
+  <text x="732" y="597" font-size="10.5" fill="#93bda3">zbuf / lum: nearest hit wins</text>
+  <rect x="720" y="638" width="300" height="60" rx="6" fill="#101815" stroke="#ffd166" stroke-opacity="0.8" stroke-width="1.3"/>
+  <text x="732" y="658" font-size="12.5" font-weight="bold" fill="#e7f6ec">persistence ping-pong</text>
+  <text x="732" y="675" font-size="10.5" fill="#93bda3">dst[i] = max(lum[i], src[i]·p)</text>
+  <text x="732" y="690" font-size="10.5" fill="#93bda3">heads crisp · tails decay</text>
+  <rect x="720" y="730" width="300" height="72" rx="6" fill="#101815" stroke="#ffd166" stroke-opacity="0.8" stroke-width="1.3"/>
+  <text x="732" y="750" font-size="12.5" font-weight="bold" fill="#e7f6ec">charsFromLum()</text>
+  <text x="732" y="767" font-size="10.5" fill="#93bda3">lum → charset ramp glyph rows</text>
+  <text x="732" y="782" font-size="10.5" fill="#93bda3">hash-dithered charset crossfade</text>
+
+  <!-- column D: result -->
+  <rect x="1080" y="460" width="460" height="72" rx="6" fill="#101815" stroke="#ffd166" stroke-opacity="0.55" stroke-width="1.1" stroke-dasharray="5 3"/>
+  <text x="1092" y="480" font-size="12.5" font-weight="bold" fill="#e7f6ec">allocation discipline</text>
+  <text x="1092" y="497" font-size="10.5" fill="#93bda3">one reused RenderOptions · module-level scratch</text>
+  <text x="1092" y="512" font-size="10.5" fill="#93bda3">one fromCharCode per row · run-length draws</text>
+  <rect x="1080" y="560" width="460" height="80" rx="6" fill="#101815" stroke="#ffd166" stroke-opacity="0.8" stroke-width="1.3"/>
+  <text x="1092" y="580" font-size="12.5" font-weight="bold" fill="#e7f6ec">RenderResult</text>
+  <text x="1092" y="600" font-size="10.5" fill="#93bda3">{ chars: string[], lum: Float32Array }</text>
+  <text x="1092" y="615" font-size="10.5" fill="#93bda3">points · thrown · firstError · static</text>
+
+  <!-- engine internal arrows -->
+  <g stroke="#4e7d62" stroke-width="1.5" fill="none">
+    <path d="M 660 612 L 714 572" marker-end="url(#arr)"/>
+    <path d="M 870 606 L 870 632" marker-end="url(#arr)"/>
+    <path d="M 870 698 L 870 724" marker-end="url(#arr)"/>
+    <path d="M 1020 766 L 1050 766 L 1050 600 L 1074 600" marker-end="url(#arr)"/>
+  </g>
+  <!-- planar skips projection -->
+  <path d="M 344 806 C 400 806, 396 762, 414 754" stroke="#4e7d62" stroke-width="1.5" stroke-dasharray="4 3" fill="none" marker-end="url(#arr)"/>
+  <path d="M 660 732 L 714 672" stroke="#4e7d62" stroke-width="1.5" stroke-dasharray="4 3" fill="none" marker-end="url(#arr)"/>
+  <text x="668" y="706" font-size="10" fill="#6f9781">skips projection</text>
+
+  <!-- engine -> present -->
+  <path d="M 1310 640 L 1310 884" stroke="#4e7d62" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <text x="1322" y="752" font-size="10.5" fill="#93bda3">RenderResult — chars + lum</text>
+
+  <!-- ===================== lane 4: present ===================== -->
+  <rect x="40" y="890" width="1520" height="100" rx="10" fill="#0d1310" stroke="#6fc3ff" stroke-opacity="0.45" stroke-width="1.2"/>
+  <text x="56" y="914" font-size="12" font-weight="bold" letter-spacing="1.5" fill="#6fc3ff">PRESENT — canvas 2D (src/components/AsciiView.tsx)</text>
+  <rect x="64" y="926" width="696" height="50" rx="6" fill="#101815" stroke="#6fc3ff" stroke-opacity="0.8" stroke-width="1.3"/>
+  <text x="76" y="946" font-size="12.5" font-weight="bold" fill="#e7f6ec">mono + ramp — one fillText() per row</text>
+  <text x="76" y="964" font-size="10.5" fill="#93bda3">a monospace font advances spaces identically; blank rows skipped</text>
+  <rect x="800" y="926" width="440" height="50" rx="6" fill="#101815" stroke="#6fc3ff" stroke-opacity="0.8" stroke-width="1.3"/>
+  <text x="812" y="946" font-size="12.5" font-weight="bold" fill="#e7f6ec">colored — run-length glyph runs</text>
+  <text x="812" y="964" font-size="10.5" fill="#93bda3">32-step palette · glow shadow · plasma rebuilt per frame</text>
+  <rect x="1280" y="926" width="260" height="50" rx="6" fill="#101815" stroke="#6fc3ff" stroke-opacity="0.8" stroke-width="1.3"/>
+  <text x="1292" y="946" font-size="12.5" font-weight="bold" fill="#e7f6ec">stats → external store</text>
+  <text x="1292" y="964" font-size="10.5" fill="#93bda3">EMA timings every 250 ms</text>
+
+  <!-- present -> outputs -->
+  <path d="M 800 990 L 800 1014" stroke="#4e7d62" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <text x="812" y="1008" font-size="10.5" fill="#93bda3">frameRef · lumRef · canvasRef</text>
+
+  <!-- ===================== lane 5: outputs ===================== -->
+  <rect x="40" y="1020" width="1520" height="90" rx="10" fill="#0d1310" stroke="#c792ea" stroke-opacity="0.45" stroke-width="1.2"/>
+  <text x="56" y="1044" font-size="12" font-weight="bold" letter-spacing="1.5" fill="#c792ea">OUTPUTS</text>
+  <g stroke="#c792ea" stroke-opacity="0.8" stroke-width="1.3" fill="#101815">
+    <rect x="64"   y="1056" width="316" height="40" rx="6"/>
+    <rect x="420"  y="1056" width="340" height="40" rx="6"/>
+    <rect x="800"  y="1056" width="320" height="40" rx="6"/>
+    <rect x="1160" y="1056" width="380" height="40" rx="6"/>
+  </g>
+  <g font-size="12.5" font-weight="bold" fill="#e7f6ec">
+    <text x="76"   y="1073">screen</text>
+    <text x="432"  y="1073">file exports</text>
+    <text x="812"  y="1073">recorder</text>
+    <text x="1172" y="1073">clipboard</text>
+  </g>
+  <g font-size="10.5" fill="#93bda3">
+    <text x="76"   y="1089">the canvas you watch</text>
+    <text x="432"  y="1089">TXT · ANSI · HTML · SVG (exports.ts) · PNG</text>
+    <text x="812"  y="1089">GIF (15 fps · gifenc) · WebM (captureStream)</text>
+    <text x="1172" y="1089">raw frame · ANSI text</text>
+  </g>
+
+  <!-- ===================== lane 6: cli ===================== -->
+  <rect x="40" y="1140" width="1520" height="112" rx="10" fill="#0d1310" stroke="#ff9e64" stroke-opacity="0.45" stroke-width="1.2"/>
+  <text x="56" y="1164" font-size="12" font-weight="bold" letter-spacing="1.5" fill="#ff9e64">CLI — cli/src — the identical engine in a terminal</text>
+  <g stroke="#ff9e64" stroke-opacity="0.8" stroke-width="1.3" fill="#101815">
+    <rect x="64"   y="1176" width="232" height="56" rx="6"/>
+    <rect x="312"  y="1176" width="232" height="56" rx="6"/>
+    <rect x="560"  y="1176" width="232" height="56" rx="6"/>
+    <rect x="808"  y="1176" width="232" height="56" rx="6"/>
+    <rect x="1056" y="1176" width="232" height="56" rx="6"/>
+    <rect x="1304" y="1176" width="232" height="56" rx="6"/>
+  </g>
+  <g font-size="12" font-weight="bold" fill="#e7f6ec">
+    <text x="76"   y="1198">buildScene()</text>
+    <text x="324"  y="1198">RenderSession</text>
+    <text x="572"  y="1198">drift-corrected timer</text>
+    <text x="820"  y="1198">renderFrame()</text>
+    <text x="1068" y="1198">frameToAnsi()</text>
+    <text x="1316" y="1198">stdout</text>
+  </g>
+  <g font-size="10.5" fill="#93bda3">
+    <text x="76"   y="1216">flags · --state · defaults</text>
+    <text x="324"  y="1216">angles · inertia · idle skip</text>
+    <text x="572"  y="1216">default 30 fps (1–120)</text>
+    <text x="820"  y="1216">the identical engine</text>
+    <text x="1068" y="1216">run-length SGR truecolor</text>
+    <text x="1316" y="1216">alt screen · raw mode · mouse</text>
+  </g>
+  <g stroke="#4e7d62" stroke-width="1.5" fill="none">
+    <path d="M 296 1204 L 306 1204" marker-end="url(#arr)"/>
+    <path d="M 544 1204 L 554 1204" marker-end="url(#arr)"/>
+    <path d="M 792 1204 L 802 1204" marker-end="url(#arr)"/>
+    <path d="M 1040 1204 L 1050 1204" marker-end="url(#arr)"/>
+    <path d="M 1288 1204 L 1298 1204" marker-end="url(#arr)"/>
+  </g>
+
+  <!-- shared-engine elbow down to the CLI lane -->
+  <path d="M 40 648 L 20 648 L 20 1196 L 34 1196" stroke="#4e7d62" stroke-width="1.5" stroke-dasharray="5 4" fill="none" marker-end="url(#arr)"/>
+  <text transform="rotate(-90 12 920)" x="12" y="920" font-size="10.5" fill="#6f9781" text-anchor="middle">the identical engine</text>
+</svg>

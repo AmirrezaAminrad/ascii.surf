@@ -1,0 +1,63 @@
+{
+  "name": "ascii.surf",
+  "description": "Real-time 3D ASCII art renderer — 63 shapes sampled into a character-cell z-buffer, in the spirit of donut.c",
+  "private": true,
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "author": "Amirreza Aminrad <amirrezaaminrad@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AmirrezaAminrad/ascii.surf.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "cli"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "build:cli": "npm run build --workspace ascii-surf-cli",
+    "cli": "tsx cli/src/main.ts",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p cli",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "gifenc": "^1.0.3",
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@tailwindcss/vite": "4.1.17",
+    "@types/node": "22.19.17",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "5.1.1",
+    "eslint": "^10.11.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.12.0",
+    "prettier": "^3.9.9",
+    "tailwindcss": "4.1.17",
+    "tsx": "^4.23.15",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.70.1",
+    "vite": "7.3.2",
+    "vite-plugin-singlefile": "2.3.0",
+    "vitest": "^5.0.1"
+  },
+  "knip": {
+    "entry": [
+      "tools/capture/capture.js",
+      "tools/capture/collect.mjs"
+    ]
+  }
+}

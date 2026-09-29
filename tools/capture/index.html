@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>ascii.surf capture harness</title>
+    <style>
+      body {
+        margin: 0;
+        background: #050a06;
+        color: #39ff6a;
+        font:
+          13px ui-monospace,
+          Consolas,
+          monospace;
+        padding: 8px;
+      }
+      #boot-host {
+        position: fixed;
+        inset: 0;
+        z-index: 70;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div>capture harness — drive via window.__capture (see capture.js)</div>
+    <div id="boot-host"></div>
+    <script type="module" src="./capture.js"></script>
+  </body>
+</html>

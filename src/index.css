@@ -1,0 +1,303 @@
+@import "tailwindcss";
+
+/* ---------- range sliders (accent = --acc, set on the app root) ---------- */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--acc, #fff);
+  border: 1px solid rgb(255 255 255 / 0.6);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--acc, #fff) 55%, transparent);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.35);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--acc, #fff) 80%, transparent);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--acc, #fff);
+  border: 1px solid rgb(255 255 255 / 0.6);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--acc, #fff) 55%, transparent);
+  transition: transform 0.12s ease;
+}
+input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.2);
+}
+input[type="range"]:active::-moz-range-thumb {
+  transform: scale(1.35);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--acc, #fff) 80%, transparent);
+}
+input[type="range"]::-moz-range-track {
+  background: transparent;
+}
+input[type="range"]:focus-visible {
+  outline: 1px solid var(--acc, #fff);
+  outline-offset: 3px;
+}
+/* hover: lift the whole track slightly so the slider feels grabbable */
+label:hover > input[type="range"] {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--acc, #fff) 18%, transparent);
+}
+
+/* ---------- scrollbars ---------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.18) transparent;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.14);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 0.28);
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+/* light panel variant (Paper theme) */
+[data-panel="light"] {
+  scrollbar-color: rgb(0 0 0 / 0.28) transparent;
+}
+[data-panel="light"] ::-webkit-scrollbar-thumb {
+  background: rgb(0 0 0 / 0.22);
+}
+[data-panel="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgb(0 0 0 / 0.4);
+}
+
+/* ---------- selection / caret / focus ---------- */
+::selection {
+  background: color-mix(in srgb, var(--acc, #fff) 30%, transparent);
+}
+textarea,
+input {
+  caret-color: var(--acc, #fff);
+}
+:focus-visible {
+  outline: 1px solid var(--acc, #fff);
+  outline-offset: 2px;
+}
+
+/* ---------- animations ---------- */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+@keyframes star-pop {
+  0% {
+    transform: scale(0.4) rotate(-20deg);
+  }
+  60% {
+    transform: scale(1.45) rotate(8deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+@keyframes toast-progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 4px currentColor;
+  }
+  50% {
+    box-shadow: 0 0 9px currentColor;
+  }
+}
+.anim-toast {
+  animation: toast-in 0.18s ease-out both;
+}
+.anim-fade {
+  animation: fade-in 0.15s ease-out both;
+}
+.anim-pop {
+  animation: pop-in 0.16s ease-out both;
+}
+.anim-blink {
+  animation: blink 1.1s steps(2, jump-none) infinite;
+}
+.star-pop {
+  animation: star-pop 0.28s ease-out both;
+}
+/* auto-dismiss countdown line under flash toasts (matches the 1.8 s timer) */
+.toast-progress {
+  animation: toast-progress 1.8s linear both;
+}
+/* staggered entrance for shape-grid cards (remounted on category switch) */
+.card-in {
+  animation: card-in 0.22s ease-out both;
+}
+/* healthy-fps idle glow on the status dot */
+.fps-breathe {
+  animation: breathe 2.2s ease-in-out infinite;
+}
+/* boot splash (Matrix rain, BootRain.tsx): fade-out duration matches FADE_MS */
+.boot-rain {
+  transition: opacity 700ms ease;
+}
+/* hide scrollbars while keeping scrollability (mobile header button strip) */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- keyboard hints ---------- */
+.kbd {
+  display: inline-block;
+  min-width: 1.5rem;
+  padding: 0.05rem 0.35rem;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 0.06);
+  font-size: 10px;
+  line-height: 1.4;
+  text-align: center;
+  color: rgb(255 255 255 / 0.85);
+}
+
+/* ---------- header buttons: accent tint + soft glow on hover ---------- */
+.hbtn:hover {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, currentColor 16%, transparent);
+}
+.hbtn:active {
+  box-shadow: none;
+}
+
+/* ---------- collapsible sections ---------- */
+.sect-chevron {
+  transform-origin: center;
+}
+
+/* ---------- panel drag-resize handle (desktop only) ---------- */
+.panel-resize.is-dragging > span {
+  background: var(--acc, #fff);
+  box-shadow: 0 0 12px var(--acc, #fff);
+}
+
+/* ---------- high-contrast preference: stronger structure, bigger focus ---------- */
+@media (prefers-contrast: more) {
+  :focus-visible {
+    outline-width: 2px;
+    outline-offset: 1px;
+  }
+  .kbd {
+    border-color: rgb(255 255 255 / 0.55);
+    color: rgb(255 255 255 / 0.95);
+  }
+  * {
+    scrollbar-color: rgb(255 255 255 / 0.45) transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(255 255 255 / 0.4);
+  }
+  input[type="range"] {
+    outline-offset: 4px;
+  }
+  .hbtn {
+    outline-offset: 1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-toast,
+  .anim-fade,
+  .anim-pop,
+  .anim-blink,
+  .star-pop,
+  .toast-progress,
+  .card-in,
+  .fps-breathe {
+    animation: none;
+  }
+  .boot-rain {
+    display: none;
+  }
+  .sect-body {
+    transition: none;
+  }
+  .sect-chevron {
+    transition: none;
+  }
+  input[type="range"]::-webkit-slider-thumb,
+  input[type="range"]::-moz-range-thumb {
+    transition: none;
+  }
+}
